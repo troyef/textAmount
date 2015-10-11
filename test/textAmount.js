@@ -47,7 +47,8 @@ describe('textAmount', function() {
     BILLION: 'BILLION',
     TRILLION: 'TRILLION', 
     DOLLARS: 'DOLLARS',
-    AND: 'AND'
+    AND: 'AND',
+    thousandGroups : ['','THOUSAND','MILLION','BILLION','TRILLION']
   };
 
   it('should work with passed in locale object', function () {
@@ -80,10 +81,10 @@ describe('textAmount', function() {
       } , Error, 'textAmount.js: Invalid input. Please pass in a positive number less than 10 trillion.');
     });
 
-    it('a number input over 10 trillon should throw an error', function () {
+    it('a number input larger than what is supported by the locale object should throw an error', function () {
       assert.throws(function(){
-        textAmount(1.00e13);
-      } , Error, 'textAmount.js: Invalid input. Please pass in a positive number less than 10 trillion.');
+        textAmount(1.00e18);
+      } , Error, 'textAmount.js: Invalid input. textAmount lacks the language support for a number that high.');
     });
 
   });

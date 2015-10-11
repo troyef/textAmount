@@ -33,9 +33,9 @@ var defaultLocale = {
 	BILLION: 'billion',
 	TRILLION: 'trillion',
 	DOLLARS: 'dollars',
-	AND: 'and'
+	AND: 'and',
+  thousandGroups : ['','THOUSAND','MILLION','BILLION','TRILLION']
 };
-var grandsArray = ['','THOUSAND','MILLION','BILLION','TRILLION'];
 
 var setupLocaleFn = function setupLocaleFn(localObj){
 	return function(key){
@@ -54,8 +54,8 @@ var convertThousand = function convertThousand(amt, getLocaleText){
 	if (amt === 0){
 		return '';
 	}
-
-	var hundred = Math.floor(amt / 100);
+  
+  var hundred = Math.floor(amt / 100);
 	res = (hundred > 0) ? getLocaleText(hundred) + ' ' + getLocaleText('HUNDRED') + ' ' : res;
 
 	amt = amt % 100;
@@ -85,40 +85,58 @@ var convertThousand = function convertThousand(amt, getLocaleText){
 module.exports = function textAmount(amt, localeObj){
 	var result = '',
 	 grands = 0,
-	 tmpStr,
-   getLocaleText = setupLocaleFn(localeObj || defaultLocale);
+   parts, tmpStr, i, start,
+   localeObj = localeObj || defaultLocale;
+   getLocaleText = setupLocaleFn(localeObj);
+   thousandGroups = localeObj.thousandGroups;
 
 	//first we verify the input value is valid and ensure it is a number
 	var reg = /^\d+(\.\d+)?$/;
 	if (!reg.test(amt)){
 		throw new Error('textAmount.js: Invalid input. Please pass in a number value.');
 	}
-	amt = Number(amt);
+	amt = String(amt).trim();
 
   //check the range of acceptable values - limited by JavaScript's available precision
-  if (amt < 0 || amt >= 1.0e13){
+  if (Number(amt) < 0 ){
     throw new Error('textAmount.js: Invalid input. Please pass in a positive number less than 10 trillion.');   
   }
 
-	//get the cents part
-	result = String(Math.round((amt % 1) * 100));
-	result = (result.length > 1) ? result : '0' + result;
+	//handle the cents part
+  parts = amt.split('.');
+  
+  if (parts.length === 1){
+    if (Number(amt) < 1){
+      result = String(Math.round((amt % 1) * 100));
+    } else {
+      result = '00';
+    }
+  } else {
+    result = String(Math.round((Number('.' + parts[1])) * 100));
+  }
+	
+  result = (result.length > 1) ? result : '0' + result; 
 	result = result + '/100 ' + getLocaleText('DOLLARS');
 
-	//get the dollars part
-	if (amt >= 1.00){
-		result = getLocaleText('AND') + ' ' + result;
-		amt = Math.floor(amt);
-		while (amt > 0){
-			tmpStr = convertThousand(amt % 1000, getLocaleText);
-			if (tmpStr.length > 0){
-				result = tmpStr + getLocaleText(grandsArray[grands]) 
-        + ((grandsArray[grands] === '') ? '' : ' ') + result;	
-			}
-      amt = Math.floor(amt / 1000);
-      grands++;
-		}
-	}
+	//handle the dollars part
+  if (Number(amt) >= 1){
+    result = getLocaleText('AND') + ' ' + result;
+    i = parts[0].length - 3;
+    while (i + 2 >= 0){
+      start = (i < 0) ? 0 : i; 
+      
+      tmpStr = convertThousand(Number(parts[0].substring(start,i+3)), getLocaleText);
+      if (tmpStr.length > 0){
+        if (thousandGroups.length <= grands){
+          throw new Error('textAmount.js: Invalid input. textAmount lacks the language support for a number that high.');   
+        }
+
+        result = tmpStr + getLocaleText(thousandGroups[grands]) + ((thousandGroups[grands] === '') ? '' : ' ') + result; 
+      }
+      grands++
+      i = i - 3;
+    }
+  }
 
 	//capitalize the first char of the result
   return String(result.substr(0,1).toUpperCase()) + String(result.substring(1));  
