@@ -1,0 +1,14 @@
+{
+  "name": "textAmount",
+  "version": "0.0.0",
+  "description": "Convert a decimal amount value to it's long-form text representation",
+  "main": "textAmount.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "troyef",
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^2.3.3"
+  }
+}
