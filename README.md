@@ -4,9 +4,9 @@ Convert a decimal amount value to it's long-form text representation.
 For instance:
 2523.04 converts to "Two thousand five hundred twenty-three and 04/100 dollars"
 
-A standard use case may be the written dollar amount of a check.
+A standard use case (and the one I assumed for this exercise) is the written dollar amount of a check.
 
-textAmount.js is a node module that returns a single function for doing amount conversion. Note that due to precision limitations of JavaScript, the textAmount conversion method only supports values less than 10 trillion (1.0e13). (That's well beyond the IRS maximum check value limit.) Also, this conversion method does not support negative values. (If only writing negative checks was possible...)
+textAmount.js is a node module that returns a single function for doing amount conversion. Note that due to precision limitations of working with numbers in JavaScript, the textAmount conversion method only supports values less than 10 trillion (1.0e13). (That's well beyond the IRS maximum check value limit.) Also, this conversion method does not support negative values. (If only writing negative checks was possible...)
 
 ``` sh
 var textAmount = require('../textAmount');
